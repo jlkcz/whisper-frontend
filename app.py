@@ -115,12 +115,12 @@ def new():
 @app.route("/text/<int:id>")
 def text(id):
     task = db.get_or_404(Task, id)
-    return render_template("result.html", task=task)
+    return render_template("result.html", content=task.result, id=task.id, filename=task.file)
 
 @app.route("/result/<int:id>")
 def result(id):
     task = db.get_or_404(Task, id)
-    return render_template("result.html", content=task.subs, id=task.id)
+    return render_template("result.html", content=task.subs, id=task.id, filename=task.file)
 
 @app.route("/logs")
 def logs():

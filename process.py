@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
 
+import os
 import sys
-import os.path
 import time
-import datetime
-from datetime import timedelta
 import sqlite3
+import os.path
+import datetime
+import traceback
 from pprint import pprint
+from datetime import timedelta
+
+import dotenv
+dotenv.load_dotenv()
+WHISPER_MODEL=os.environ.get("WHISPER_MODEL")
+SLEEP_NOTASKS=os.environ.get("SLEEP_NOTASKS", 60)
+
 import logging
 logging.basicConfig(filename='instance/app.log', level=logging.DEBUG, format='[%(asctime)s] %(message)s')
 
@@ -43,11 +51,14 @@ cur = con.cursor()
 ### Sending emails ###
 
 def send_task_over_email(to, subs, content, job_id, filename):
-    msg_from = "jakub.lucky@rozhlas.cz"
-    url = "http://TODO"
+    server = os.environ.get("MAIL_SERVER", "localhost")
+    port = os.environ.get("MAIL_PORT", 465)
+    mail_user = os.environ.get("MAIL_USER")
+    mail_pass = os.environ.get("MAIL_PASS")
+    local_url = os.environ.get("LOCAL_URL")
     content = f"""Ahoj,
 
-    tvůj přepis {job_id} souboru {filename} byl dokončen. Obsah si můžeš načíst jako titulky na {url}/result/{job_id} a jako čistý text na {url}/text/{job_id} Jako titulky ho najdeš i níže:
+    tvůj přepis {job_id} souboru {filename} byl dokončen. Obsah si můžeš načíst jako titulky na {local_url}/result/{job_id} a jako čistý text na {local_url}/text/{job_id} Jako titulky ho najdeš i níže:
 
     Pac a pusu
     Tvůj Whisper!
@@ -59,12 +70,13 @@ def send_task_over_email(to, subs, content, job_id, filename):
     msg = EmailMessage()
     msg.set_content(content)
     msg['Subject'] = f"[whisper] Přepis {job_id} hotov!"
-    msg['From'] = msg_from
-    msg['To'] = 'root@localhost' #to
+    msg['From'] = mail_user
+    msg['To'] = to
 
-    s = smtplib.SMTP('localhost')
-    s.send_message(msg)
-    s.quit()
+
+    with smtplib.SMTP_SSL(server, port) as smtp:
+        smtp.login(mail_user, mail_pass)
+        smtp.send_message(msg)
     return True
 
 ### Actual processing ###
@@ -76,7 +88,7 @@ with con:
         unfinished_tasks = cur.fetchall()
         if not unfinished_tasks:
             logging.debug("No jobs to perform")
-            time.sleep(30)
+            time.sleep(SLEEP_NOTASKS)
             continue
         for row in unfinished_tasks:
             logging.info(f"Starting job {row['id']} ({row['file']})")
@@ -100,11 +112,11 @@ with con:
                     logging.error(traceback.format_exc())
                     continue
                 file = f"{result['id']}.mp3"
-                logging.debug("File saved as {file}")
+                logging.debug(f"File saved as {file}")
                 cur.execute("UPDATE task SET file=? WHERE id=?", (os.path.join('instance','files', f"{result['id']}.mp3"), row["id"]))
                 con.commit()
             #now process
-            model = whisper.load_model("small")
+            model = whisper.load_model(WHISPER_MODEL)
             try:
                 result = model.transcribe(os.path.join("instance","files",file), fp16=False)
             except Exception as e:
@@ -128,7 +140,7 @@ with con:
             try:
                 send_task_over_email(row['owner'], subs, result["text"], row["id"], file)
             except Exception as e:
-                logging.error("Sending notification for job {row['id']} failed")
+                logging.error(f"Sending notification for job {row['id']} failed")
                 logging.error(traceback.format_exc())
                 continue
             logging.info(f"Notification for job {row['id']} sent!")
