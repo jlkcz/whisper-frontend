@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}This is an example page{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-fixed-top">
+  <!-- ... -->
+</div>
+{% endblock %}
+
+{% block content %}
+  <h1>Přepisovač Whisper</h1>
+  <div class="card card-body bg-light lead"><strong>Aktuálně čeká na přepis: {{count}} souborů</strong></div>
+  <br>
+  <p>
+  Toto je přepisovač Whisper (respektive jeho přívětivé ovládání), které umí přepisovat texty a vytvořit titulky. Lze do něj nahrát téměř libovolný audio nebo video soubor, který pak časem přepíše. Standardní doba přepisu je cca TODO. Po dokončení vám přijde email.
+  </p>
+  <p>Na výběr je <a href="/new">nahrát vlastní zvukový nebo video soubor</a> nebo ho <a href="/new-url">stáhnout automaticky</a> pomocí yt-dlp, které umí stahovat z YouTube a podobných služeb. Případná výhoda ručního nahrání místo auto-stažení je možnost omezit délku, auto-stažení vždy stáhne celé video </p>
+{% endblock %}
+

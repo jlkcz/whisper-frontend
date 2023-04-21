@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}This is an example page{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-fixed-top">
+  <!-- ... -->
+</div>
+{% endblock %}
+
+{% block content %}
+  <h1>Zadané přepisy</h1>
+  {% for task in tasks %}
+    {% if loop.first %}
+    <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Zadal</th>
+      <th scope="col">Soubor</th>
+      <th scope="col">URL</th>
+      <th scope="col">Vytvořeno</th>
+      <th scope="col">Výsledek</th>
+      <th scope="col">Čistý text</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% endif %}
+    <tr>
+      <th scope="row">{{task.id}}</th>
+      <td>{{task.owner}}</td>
+      <td>{{task.file}}</td>
+      <td>{{task.url}}</td>
+      <td>{{task.created_at}}</td>
+      {% if task.result %}
+      <td><a href="/result/{{task.id}}" class="btn btn-success">Zobrazit titulky</a></td>
+      <td><a href="/text/{{task.id}}" class="btn btn-primary">Zobrazit text</a></td>
+      {% else %}
+      <td>--</td>
+      <td>--</td>
+      {% endif %}
+    </tr>
+    {% if loop.last %}
+    </tbody>
+    </table>
+    {%endif%}
+  {% else %}
+    No tasks yet
+  {%endfor%}
+{% endblock %}

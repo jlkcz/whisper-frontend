@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        {% block head %}
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        {% block styles %}
+            <!-- Bootstrap CSS -->
+            {{ bootstrap.load_css() }}
+        {% endblock %}
+
+        <title>Přepisovač Whisper</title>
+        {% endblock %}
+    </head>
+    <body>
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark flex-sm-nowrap flex-wrap" style="margin-bottom:1em;">
+    <div class="container-fluid">
+        <button class="navbar-toggler flex-grow-sm-1 flex-grow-0 me-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbar5">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a href="/" class="nav-link"><span class="navbar-brand flex-grow-1">Whisper</span></a>
+        <div class="navbar-collapse collapse flex-grow-1 justify-content-center" id="navbar5">
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/new">Přidat nový přepis</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/new-url">Nový přepis z webu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/results">Výsledky přepisů</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/stats">Statistika</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/logs">Protokolovací záznamy</a>
+                </li>
+            </ul>
+        </div>
+        <div class="flex-grow-1">
+            <!--spacer-->
+        </div>
+    </div>
+</nav>
+<div class="container">
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+        {{message}}
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+        {% block content %}{% endblock %}
+</div>
+        {% block scripts %}
+            {{ bootstrap.load_js() }}
+        {% endblock %}
+    </body>
+</html>

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}This is an example page{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-fixed-top">
+  <!-- ... -->
+</div>
+{% endblock %}
+
+{% block content %}
+  <h1>Statisticky přepisovače</h1>
+  <dl>
+    <dt>Počet dokončených úloh</dt><dd>{{count}}</dd>
+    <dt>Celková doba strávená přepisy</dt><dd>{{td_sum}}</dd>
+    <dt>Průměrně na úlohu</dt><dd>{{avg}}</dd>
+    <dt>Započaté, ale nedokončené úlohy</dt><dd>{{unfinished}}</dd>
+  </dl>
+
+{% endblock %}
+

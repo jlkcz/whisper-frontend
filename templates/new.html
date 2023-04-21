@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% from 'bootstrap5/form.html' import render_form %}
+{% block title %}Nový přepis{% endblock %}
+
+
+{% block content %}
+  <h1>Nový přepis</h1>
+  {{render_form(form) }}
+{% endblock %}

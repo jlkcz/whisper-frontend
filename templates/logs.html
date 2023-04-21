@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}This is an example page{% endblock %}
+
+{% block navbar %}
+<div class="navbar navbar-fixed-top">
+  <!-- ... -->
+</div>
+{% endblock %}
+
+{% block content %}
+  <h1>Protokolovací záznamy {{id}}</h1>
+  <div class="card card-body bg-light">
+    {% autoescape false %}
+    {{ content | replace("\n","<br>") }}
+    {% endautoescape %}
+  </div>
+{% endblock %}
