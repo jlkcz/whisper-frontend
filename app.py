@@ -1,6 +1,8 @@
 import os
+import re
 import time
 import datetime
+import subprocess
 from pprint import pprint
 
 from flask import Flask, render_template, redirect, flash, url_for
@@ -127,6 +129,22 @@ def logs():
     content = "".join(reversed(list(open("instance/app.log"))))
     return render_template("logs.html", content=content)
 
+
+def all_audio_length_helper(tasks):
+    length_all=datetime.timedelta()
+    for task in tasks:
+        result = subprocess.run(["ffmpeg","-hide_banner","-i",f"instance/files/{task.file}"], capture_output=True)
+        found = re.search('Duration: ([0-9]{2}:[0-9]{2}:[0-9]{2})', result.stderr.decode())
+        try:
+            length_str = found.groups()[0]
+        except AttributeError:
+            length_str = "00:00:00"
+        length_time = datetime.time.fromisoformat(length_str)
+        td = datetime.timedelta(hours=length_time.hour, minutes=length_time.minute, seconds=length_time.second)
+        length_all += td
+    return length_all
+
+
 @app.route("/stats")
 def stats():
     tasks = db.session.execute(db.select(Task).where(Task.finished_at != None)).scalars()
@@ -134,6 +152,7 @@ def stats():
     count = 0
     td_sum = datetime.timedelta()
     for task in tasks:
+        pprint(task.finished_at, task.created_at, difference)
         count += 1
         difference = task.finished_at - task.created_at
         td_sum += difference
@@ -141,5 +160,28 @@ def stats():
         avg = td_sum/count
     except DivisionByZero:
         avg = 0
-    return render_template("stats.html", count=count, td_sum=td_sum, avg=avg, unfinished=len(unfinished_tasks))
+
+    tasks = db.session.execute(db.select(Task).where(Task.finished_at != None)).scalars()
+    length_all=all_audio_length_helper(tasks)
+    pprint(length_all)
+    pprint(td_sum)
+    try:
+        time_per_minute = td_sum/length_all
+    except DivisionByZero:
+        time_per_minute = 0
+
+    return render_template("stats.html", count=count, td_sum=td_sum, avg=avg, unfinished=len(unfinished_tasks), length_all=length_all, time_per_minute=time_per_minute)
 #    return f"{count} jobs for {td_sum}, avg {td_sum/count}"
+
+#Possible option to count lenghts of files
+
+#for file in os.listdir('instance/files'):
+#    print(file)
+#    result = subprocess.run(["ffmpeg","-hide_banner","-i",f"instance/files/{file}"], capture_output=True)
+#    found = re.search('([0-9][0-9]:[0-9\.:]+)', result.stderr.decode())
+#    try:
+#        length_str = found.groups()[0]
+#    except AttributeError:
+#        length_str = "00:00:00.00"
+#    print(length_str)
+

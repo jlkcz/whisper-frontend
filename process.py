@@ -20,6 +20,7 @@ logging.basicConfig(filename='instance/app.log', level=logging.DEBUG, format='[%
 
 import smtplib
 from email.message import EmailMessage
+import email.utils
 
 import whisper
 import yt_dlp
@@ -51,8 +52,8 @@ cur = con.cursor()
 ### Sending emails ###
 
 def send_task_over_email(to, subs, content, job_id, filename):
-    server = os.environ.get("MAIL_SERVER", "localhost")
-    port = os.environ.get("MAIL_PORT", 465)
+    mail_server = os.environ.get("MAIL_SERVER", "localhost")
+    mail_port = os.environ.get("MAIL_PORT", 465)
     mail_user = os.environ.get("MAIL_USER")
     mail_pass = os.environ.get("MAIL_PASS")
     local_url = os.environ.get("LOCAL_URL")
@@ -69,14 +70,18 @@ def send_task_over_email(to, subs, content, job_id, filename):
     """
     msg = EmailMessage()
     msg.set_content(content)
+    msg['message-id'] = email.utils.make_msgid()
     msg['Subject'] = f"[whisper] Přepis {job_id} hotov!"
     msg['From'] = mail_user
     msg['To'] = to
 
+    with smtplib.SMTP(mail_server, mail_port) as server:
+        server.ehlo()
+        server.starttls()
+        server.ehlo()  # Can be omitted
+        server.login(mail_user, mail_pass)
+        server.send_message(msg)
 
-    with smtplib.SMTP_SSL(server, port) as smtp:
-        smtp.login(mail_user, mail_pass)
-        smtp.send_message(msg)
     return True
 
 ### Actual processing ###
